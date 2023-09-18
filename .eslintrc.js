@@ -2,7 +2,8 @@ module.exports = {
   'env': {
     'node': true,
     'commonjs': true,
-    'es2021': true
+    'es2021': true,
+    'jest': true,
   },
   'extends': 'eslint:recommended',
   'overrides': [
@@ -31,6 +32,9 @@ module.exports = {
     ],
     'arrow-spacing': [
       'error', { 'before': true, 'after': true }
+    ],
+    'no-unused-vars': [
+      'error', { 'args': 'none' }
     ],
     'no-console': 0,
   }
