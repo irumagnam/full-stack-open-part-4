@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+// declare schema
 const blogSchema = new mongoose.Schema({
   title: String,
   author: String,
@@ -7,6 +8,7 @@ const blogSchema = new mongoose.Schema({
   likes: Number
 })
 
+// setup JSON transformer
 blogSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
@@ -15,4 +17,8 @@ blogSchema.set('toJSON', {
   }
 })
 
-module.exports = mongoose.model('Blog', blogSchema)
+// create model
+const Blog = mongoose.model('Blog', blogSchema)
+
+// export
+module.exports = Blog
