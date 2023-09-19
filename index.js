@@ -1,4 +1,4 @@
-const app = require('./blog_app')
+const app = require('./note_app')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
 

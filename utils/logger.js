@@ -1,9 +1,11 @@
+const isEnabled = process.env.NODE_ENV !== 'test'
+
 const info = (...params) => {
-  console.log(...params)
+  isEnabled && console.log(...params)
 }
 
 const error = (...params) => {
-  console.error(...params)
+  isEnabled && console.error(...params)
 }
 
 module.exports = {
