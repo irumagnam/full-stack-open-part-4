@@ -44,7 +44,7 @@ describe('when viewing exising blogs initially', () => {
 
 })
 
-describe('when adding a new blog entry', () => {
+describe('when creating a blog entry', () => {
 
   test('fails with status code 400 for invalid data', async () => {
     // no author

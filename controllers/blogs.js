@@ -17,21 +17,13 @@ blogsRouter.post('/', async (request, response) => {
   const body = request.body
 
   // input validations
-  if (body.title === undefined) {
+  const requiredFields = ['title', 'author', 'url']
+  const missingFields = requiredFields.filter(
+    key => body[key] === undefined
+  )
+  if (missingFields.length > 0) {
     return response.status(400).send({
-      error: 'blog title is required'
-    })
-  }
-
-  if (body.author === undefined) {
-    return response.status(400).send({
-      error: 'blog author is required'
-    })
-  }
-
-  if (body.url === undefined) {
-    return response.status(400).send({
-      error: 'blog URL is required'
+      error: `Please provide data for: [${missingFields.join(', ')}]`
     })
   }
 
