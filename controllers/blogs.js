@@ -3,7 +3,8 @@ const Blog = require('../models/blog')
 
 // get all records
 blogsRouter.get('/', async (request, response) => {
-  response.json(await Blog.find({}))
+  const blogs = await Blog.find({})
+  response.json(blogs)
 })
 
 // get a specific record

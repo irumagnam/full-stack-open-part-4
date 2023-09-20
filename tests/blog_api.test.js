@@ -2,40 +2,47 @@ const mongoose = require('mongoose')
 const app = require('../blog_app')
 const supertest = require('supertest')
 const api = supertest(app)
-const Blog =  require('../models/blog')
 const helper = require('./blog_test_helper')
-const resource = '/api/blogs'
 
 // initialize blogs data in DB before test cases are run
 beforeEach(async () => {
-  // clear existing entries
-  await Blog.deleteMany({})
-  // setup initial entries
-  await Blog.insertMany(helper.initialBlogs)
+  await helper.setupInitialData()
 })
 
-describe('when viewing exising blogs initially', () => {
+describe('when working with initial data', () => {
 
-  test('data is returned as JSON', async () => {
-    await api.get(resource)
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
+  test('all users are returned with expected data', async () => {
+    const response = await api.get('/api/users')
+    const users = response.body
+    expect(users).toHaveLength(helper.initialUsers.length)
   })
 
-  test('all blogs are returned', async () => {
-    const response = await api.get(resource)
-    expect(response.body).toHaveLength(
-      helper.initialBlogs.length
-    )
+  test('all blogs are returned with expected data', async () => {
+    const response = await api.get('/api/blogs')
+    const blogs = response.body
+    expect(blogs).toHaveLength(helper.initialBlogs.length)
   })
 
-  test('"id" property exists', async () => {
-    const response = await api.get(resource)
+  test('"id" property exists for User', async () => {
+    const response = await api.get('/api/users')
+    response.body.map(u => expect(u.id).toBeDefined())
+  })
+
+  test('"id" property exists for Blog', async () => {
+    const response = await api.get('/api/blogs')
     response.body.map(b => expect(b.id).toBeDefined())
   })
 
-  test('a specific blog is available', async () => {
-    const response = await api.get(resource)
+  test('a specific user is returned', async () => {
+    const response = await api.get('/api/users')
+    const usernames = response.body.map(u => u.username)
+    expect(usernames).toContain(
+      helper.initialUsers[0].username
+    )
+  })
+
+  test('a specific blog is returned', async () => {
+    const response = await api.get('/api/blogs')
     const blogTitles = response.body.map(b => b.title)
     expect(blogTitles).toContain(
       helper.initialBlogs[0].title
@@ -49,24 +56,24 @@ describe('when creating a blog entry', () => {
   test('fails with status code 400 for invalid data', async () => {
     // no author
     await api
-      .post(resource)
+      .post('/api/blogs')
       .send(helper.newBlogNoTitle)
       .expect(400)
     // no title
     await api
-      .post(resource)
+      .post('/api/blogs')
       .send(helper.newBlogNoTitle)
       .expect(400)
     // no url
     await api
-      .post(resource)
+      .post('/api/blogs')
       .send(helper.newBlogNoUrl)
       .expect(400)
   })
 
   test('succeeds with status code 201 for valid data', async () => {
     await api
-      .post(resource)
+      .post('/api/blogs')
       .send(helper.newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -84,7 +91,7 @@ describe('when creating a blog entry', () => {
 
   test('sets "likes" to 0 if missing in the request', async () => {
     const response = await api
-      .post(resource)
+      .post('/api/blogs')
       .send(helper.newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -99,7 +106,7 @@ describe('when retrieving a blog entry', () => {
     const blogsInDb = await helper.blogsInDb()
     const blogToRetrieve = blogsInDb[0]
     const response = await api
-      .get(`${resource}/${blogToRetrieve.id}`)
+      .get(`/api/blogs/${blogToRetrieve.id}`)
       .expect(200)
       .expect('Content-Type', /application\/json/)
     const retrievedBlog = response.body
@@ -108,7 +115,7 @@ describe('when retrieving a blog entry', () => {
 
   test('fails with status code 400 for an invalid id', async () => {
     await api
-      .get(`${resource}/random_id`)
+      .get('/api/blogs/random_id')
       .expect(400)
   })
 
@@ -120,7 +127,7 @@ describe('when deleting a blog entry', () => {
     const previousBlogs = await helper.blogsInDb()
     const blogToDelete = previousBlogs[0]
     await api
-      .delete(`${resource}/${blogToDelete.id}`)
+      .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
     // check that the list is reduced
     const currentBlogs = await helper.blogsInDb()
@@ -132,7 +139,7 @@ describe('when deleting a blog entry', () => {
 
   test('fails with status code 400 for an invalid id', async () => {
     await api
-      .delete(`${resource}/random_id`)
+      .delete('/api/blogs/random_id')
       .expect(400)
   })
 
@@ -144,7 +151,7 @@ describe('when updating a blog entry', () => {
     const blogsInDb = await helper.blogsInDb()
     const blogToUpdate = { ...blogsInDb[0], likes: 99 }
     const response = await api
-      .put(`${resource}/${blogToUpdate.id}`)
+      .put(`/api/blogs/${blogToUpdate.id}`)
       .send(blogToUpdate)
       .expect(200)
       .expect('Content-Type', /application\/json/)
@@ -156,7 +163,7 @@ describe('when updating a blog entry', () => {
     const blogsInDb = await helper.blogsInDb()
     const blogToUpdate = blogsInDb[0]
     await api
-      .put(`${resource}/random_id`)
+      .put('/api/blogs/random_id')
       .send(blogToUpdate)
       .expect(400)
   })
