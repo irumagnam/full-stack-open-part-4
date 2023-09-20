@@ -1,5 +1,7 @@
+const config = require('./config')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { expressjwt: jwtExpress } = require('express-jwt')
 
 const hashText = async (text, saltRounds = 10) => {
   const hashedText = await bcrypt.hash(text, saltRounds)
@@ -14,7 +16,7 @@ const compare = async (passwordText, passwordHash) => {
 const generateToken = (data) => {
   return jwt.sign(
     data,
-    process.env.SECRET,
+    config.SECRET,
     //{ expiresIn: process.env.TOKEN_EXP_SECONDS }
   )
 }
@@ -27,10 +29,17 @@ const verifyToken = (token) => {
 
   const decodedToken = jwt.verify(
     encodedToken,
-    process.env.SECRET
+    config.SECRET
   )
 
   return decodedToken
+}
+
+const protectResource = () => {
+  jwtExpress({
+    secret: config.SECRET,
+    algorithms: ['HS256']
+  })
 }
 
 module.exports = {
@@ -38,4 +47,5 @@ module.exports = {
   compare,
   generateToken,
   verifyToken,
+  protectResource,
 }

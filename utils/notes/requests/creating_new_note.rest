@@ -1,9 +1,9 @@
 POST http://localhost:3001/api/notes
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbWFsdG1hbiIsImlkIjoiNjUwYTY1ODdiZTlkNjAyZjZiMWU5YjZlIiwiaWF0IjoxNjk1MTkzNTczfQ.9oLD7E7b1L8IywN3AjM6EvfrfvXY_Qidw0qqt6tRY5g
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImVsb25tdXNrIiwiaWQiOiI2NTBiNjlhZDA4NzQ1NTc1ZjhhZjYzOTkiLCJpYXQiOjE2OTUyNDY4NDJ9.CMMwCOQVquB1ExiN7FIew0hE_4d4CGmoRLaEGs9AyYI
 
 {
   "content": "Ensure that everything still works ok",
   "important": true,
-  "userId": "65094d20aeab0d4108d5e0c2"
+  "userId": "650b69ad08745575f8af6399"
 }

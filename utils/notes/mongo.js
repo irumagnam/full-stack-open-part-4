@@ -1,42 +1,16 @@
-const mongoose = require('mongoose')
+const express = require('express')
+const { MongoMemoryServer } = require('mongodb-memory-server')
+const app = express()
 
-if (process.argv.length<3) {
-  console.log('give password as argument')
-  process.exit(1)
-}
+const DB_PORT = 9503
+const APP_PORT = 9504
 
-const password = process.argv[2]
-
-const url =
-  `mongodb+srv://fullstack:${password}@cluster0.o1opl.mongodb.net/?retryWrites=true&w=majority`
-
-mongoose.set('strictQuery',false)
-mongoose.connect(url)
-
-const noteSchema = new mongoose.Schema({
-  content: String,
-  date: Date,
-  important: Boolean,
-})
-
-const Note = mongoose.model('Note', noteSchema)
-
-const note = new Note({
-  content: 'Mongoose makes things easy',
-  date: new Date(),
-  important: true,
-})
-
-/*
-note.save().then(result => {
-  console.log('note saved!')
-  mongoose.connection.close()
-})
-*/
-
-Note.find({}).then(result => {
-  result.forEach(note => {
-    console.log(note)
+app.listen(APP_PORT, async() => {
+  console.log('starting mongo db memory server')
+  const instance = await MongoMemoryServer.create({
+    instance: { port: DB_PORT }
   })
-  mongoose.connection.close()
+  console.log(`db instance started at ${instance.getUri()}`)
+
+  console.log(`Server running on port ${APP_PORT}`)
 })

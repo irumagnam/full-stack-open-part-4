@@ -1,7 +1,6 @@
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
 const User = require('../models/user')
-const security = require('../utils/security')
 
 // get all records
 notesRouter.get('/', async (request, response) => {
@@ -21,19 +20,10 @@ notesRouter.get('/:id', async (request, response) => {
 notesRouter.post('/', async (request, response) => {
   const body = request.body
 
-  // make sure we have valid authorization token
-  const authToken = request.get('Authorization')
-  console.log('token encoded', authToken)
-  const decodedToken = security.verifyToken(authToken)
-  console.log('token decoded', JSON.stringify(decodedToken))
-  if (!decodedToken.id) {
-    return response.status(401).json({
-      error: 'token invalid'
-    })
-  }
+  // extract user id from the request
+  const userId = request.auth.id
 
   // make sure we have user data in the backend
-  const userId = decodedToken.id
   const user = await User.findById(userId)
 
   // save user note
@@ -56,19 +46,10 @@ notesRouter.post('/', async (request, response) => {
 notesRouter.put('/:id', async (request, response) => {
   const body = request.body
 
-  // make sure we have valid authorization token
-  const authToken = request.get('Authorization')
-  console.log('token encoded', authToken)
-  const decodedToken = security.verifyToken(authToken)
-  console.log('token decoded', JSON.stringify(decodedToken))
-  if (!decodedToken.id) {
-    return response.status(401).json({
-      error: 'token invalid'
-    })
-  }
+  // extract user id from the request
+  const userId = request.auth.id
 
   // make sure we have user data in the backend
-  const userId = decodedToken.id
   const user = await User.findById(userId)
 
   // update user note

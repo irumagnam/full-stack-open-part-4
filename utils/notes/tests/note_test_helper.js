@@ -87,10 +87,14 @@ const generateAuthToken = async () => {
   const user = await User.findOne({
     username: initialUsers[0].username
   })
-  return security.generateToken({
+
+  const token = security.generateToken({
     username: user.username,
     id: user._id
   })
+
+  const authToken = `Bearer ${token}`
+  return authToken
 }
 
 module.exports = {

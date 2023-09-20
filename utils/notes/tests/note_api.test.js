@@ -8,34 +8,6 @@ beforeEach(async () => {
   await helper.setupInitialData()
 })
 
-describe('when working with initial data', () => {
-
-  test('all users are returned with expected data', async () => {
-    const response = await api.get('/api/users')
-    const users = response.body
-    expect(users).toHaveLength(helper.initialUsers.length)
-  })
-
-  test('all notes are returned with expected data', async () => {
-    const response = await api.get('/api/notes')
-    const notes = response.body
-    expect(notes).toHaveLength(helper.initialNotes.length)
-  })
-
-  test('a specific user is returned', async () => {
-    const response = await api.get('/api/users')
-    const usernames = response.body.map(u => u.username)
-    expect(usernames).toContain(helper.initialUsers[0].username)
-  })
-
-  test('a specific note is returned', async () => {
-    const response = await api.get('/api/notes')
-    const contents = response.body.map(r => r.content)
-    expect(contents).toContain(helper.initialNotes[0].content)
-  })
-
-})
-
 describe('when authenticating a user', () => {
 
   test('succeeds and returns an auth token for a valid user', async () => {
@@ -62,8 +34,71 @@ describe('when authenticating a user', () => {
       password: 'invalid_pwd'
     }
     console.log('login credentials:', credentials)
-    await api.post('/api/login').send(credentials)
+    await api
+      .post('/api/login')
+      .send(credentials)
       .expect(401)
+  })
+
+})
+
+describe('when accessing /api/notes', () => {
+
+  test('succeeds for an authorized user', async () => {
+    await api
+      .get('/api/notes')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(200)
+  })
+
+  test('fails for an unauthorized user', async () => {
+    await api
+      .get('/api/notes')
+      .expect(401)
+  })
+
+})
+
+describe('when working with initial data', () => {
+
+  test('all users are returned with expected data', async () => {
+    const response = await api
+      .get('/api/users')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    const users = response.body
+    expect(users).toHaveLength(helper.initialUsers.length)
+  })
+
+  test('all notes are returned with expected data', async () => {
+    const response = await api
+      .get('/api/notes')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    const notes = response.body
+    expect(notes).toHaveLength(helper.initialNotes.length)
+  })
+
+  test('a specific user is returned', async () => {
+    const response = await api
+      .get('/api/users')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    const usernames = response.body.map(u => u.username)
+    expect(usernames).toContain(helper.initialUsers[0].username)
+  })
+
+  test('a specific note is returned', async () => {
+    const response = await api
+      .get('/api/notes')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    const contents = response.body.map(r => r.content)
+    expect(contents).toContain(helper.initialNotes[0].content)
   })
 
 })
@@ -77,10 +112,9 @@ describe('when adding a note', () => {
     }
 
     // generate 'Authorization' token
-    const token = await helper.generateAuthToken()
     await api
       .post('/api/notes')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', await helper.generateAuthToken())
       .send(newNote)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -92,18 +126,10 @@ describe('when adding a note', () => {
     expect(contents).toContain(newNote.content)
   })
 
-  test('fails with status code 401 for an invalid auhtorization', async () => {
-    await api
-      .post('/api/notes')
-      .send({})
-      .expect(401)
-  })
-
   test('fails with status code 400 for an invalid data', async () => {
-    const token = await helper.generateAuthToken()
     await api
       .post('/api/notes')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', await helper.generateAuthToken())
       .send({})
       .expect(400)
     const notesAtEnd = await helper.notesInDb()
@@ -120,6 +146,7 @@ describe('when viewing a note', () => {
 
     const resultNote = await api
       .get(`/api/notes/${noteToView.id}`)
+      .set('Authorization', await helper.generateAuthToken())
       .expect(200)
       .expect('Content-Type', /application\/json/)
 
@@ -127,7 +154,10 @@ describe('when viewing a note', () => {
   })
 
   test('fails with status code 400 for an invalid id', async () => {
-    await api.get('/api/notes/random_id').expect(400)
+    await api
+      .get('/api/notes/random_id')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(400)
   })
 
 })
@@ -140,6 +170,7 @@ describe('when deleting a note', () => {
 
     await api
       .delete(`/api/notes/${noteToDelete.id}`)
+      .set('Authorization', await helper.generateAuthToken())
       .expect(204)
 
     const notesAtEnd = await helper.notesInDb()
@@ -153,7 +184,10 @@ describe('when deleting a note', () => {
   })
 
   test('fails with status code 400 for an invalid id', async () => {
-    await api.delete('/api/notes/random_id').expect(400)
+    await api
+      .delete('/api/notes/random_id')
+      .set('Authorization', await helper.generateAuthToken())
+      .expect(400)
   })
 
 })
@@ -166,7 +200,10 @@ describe('when adding a user', () => {
       password: 'shopping',
     }
 
-    await api.post('/api/users').send(newUser)
+    await api
+      .post('/api/users')
+      .set('Authorization', await helper.generateAuthToken())
+      .send(newUser)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -180,7 +217,10 @@ describe('when adding a user', () => {
   test('fails with status code 400 for a duplicate username', async () => {
     const newUser = helper.initialUsers[0]
 
-    const result = await api.post('/api/users').send(newUser)
+    const result = await api
+      .post('/api/users')
+      .set('Authorization', await helper.generateAuthToken())
+      .send(newUser)
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
