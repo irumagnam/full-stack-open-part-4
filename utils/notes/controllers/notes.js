@@ -1,15 +1,7 @@
-const jwt = require('jsonwebtoken')
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
 const User = require('../models/user')
-
-const getTokenFrom = request => {
-  const authorization = request.get('Authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
+const security = require('../utils/security')
 
 // get all records
 notesRouter.get('/', async (request, response) => {
@@ -28,33 +20,35 @@ notesRouter.get('/:id', async (request, response) => {
 // create new record
 notesRouter.post('/', async (request, response) => {
   const body = request.body
-  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+
+  // make sure we have valid authorization token
+  const authToken = request.get('Authorization')
+  console.log('token encoded', authToken)
+  const decodedToken = security.verifyToken(authToken)
+  console.log('token decoded', JSON.stringify(decodedToken))
   if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  // input validations
-  const requiredFields = ['content', 'userId']
-  const missingFields = requiredFields.filter(
-    key => body[key] === undefined
-  )
-  if (missingFields.length > 0) {
-    return response.status(400).send({
-      error: `Please provide data for: [${missingFields.join(', ')}]`
+    return response.status(401).json({
+      error: 'token invalid'
     })
   }
 
-  const user = await User.findById(body.userId)
+  // make sure we have user data in the backend
+  const userId = decodedToken.id
+  const user = await User.findById(userId)
 
+  // save user note
   const newNote = new Note({
     content: body.content,
     important: body.important === undefined ? false : body.important,
     user: user.id,
   })
-
   const savedNote = await newNote.save()
+
+  // also add this note id to user record
   user.notes = user.notes.concat(savedNote._id)
   await user.save()
 
+  // send response
   response.status(201).json(savedNote)
 })
 
@@ -62,14 +56,32 @@ notesRouter.post('/', async (request, response) => {
 notesRouter.put('/:id', async (request, response) => {
   const body = request.body
 
+  // make sure we have valid authorization token
+  const authToken = request.get('Authorization')
+  console.log('token encoded', authToken)
+  const decodedToken = security.verifyToken(authToken)
+  console.log('token decoded', JSON.stringify(decodedToken))
+  if (!decodedToken.id) {
+    return response.status(401).json({
+      error: 'token invalid'
+    })
+  }
+
+  // make sure we have user data in the backend
+  const userId = decodedToken.id
+  const user = await User.findById(userId)
+
+  // update user note
   const note = {
     content: body.content,
     important: body.important,
+    user: user.id,
   }
-
   const updatedNote = await Note.findByIdAndUpdate(
     request.params.id, note, { new: true }
   )
+
+  // send resonse
   response.status(201).json(updatedNote)
 })
 

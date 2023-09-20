@@ -1,15 +1,15 @@
 const usersRouter = require('express').Router()
-const security = require('../utils/security')
 const User = require('../models/user')
+const security = require('../utils/security')
 
 usersRouter.get('/', async (request, response) => {
   const users = await User.find({})
-    .populate('blogs', { title: 1, author: 1, url: 1, likes: 1 })
+    .populate('notes', { content: 1, important: 1 })
   response.json(users)
 })
 
 usersRouter.post('/', async (request, response) => {
-  // required field validations
+  // data validations
   const requiredFields = ['username', 'name', 'password']
   const missingFields = requiredFields.filter(
     key => request.body[key] === undefined
@@ -20,19 +20,7 @@ usersRouter.post('/', async (request, response) => {
     })
   }
 
-  // data length validations
-  const minLength = 3
   const { username, name, password } = request.body
-  if (username.length <= minLength) {
-    return response.status(400).send({
-      error: `username must be atlest ${minLength} characters`
-    })
-  }
-  if (password.length <= minLength) {
-    return response.status(400).send({
-      error: `password must be atlest ${minLength} characters`
-    })
-  }
 
   // hash password
   const saltRounds = 10

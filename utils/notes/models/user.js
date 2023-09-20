@@ -18,10 +18,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  blogs: [
+  notes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Blog',
+      ref: 'Note',
     }
   ],
 })

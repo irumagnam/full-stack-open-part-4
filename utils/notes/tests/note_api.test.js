@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
-const app = require('../note_app')
+const app = require('../app')
 const api = supertest(app)
 const helper = require('./note_test_helper')
 
@@ -36,17 +36,52 @@ describe('when working with initial data', () => {
 
 })
 
+describe('when authenticating a user', () => {
+
+  test('succeeds and returns an auth token for a valid user', async () => {
+    const credentials = {
+      username: helper.initialUsers[0].username,
+      password: helper.initialUsers[0].password
+    }
+    console.log('login credentials:', credentials)
+    const response = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.token).toBeDefined()
+    expect(response.body.name).toBe(
+      helper.initialUsers[0].name
+    )
+  })
+
+  test('fails for an invalid user', async () => {
+    const credentials = {
+      username: helper.initialUsers[0].username,
+      password: 'invalid_pwd'
+    }
+    console.log('login credentials:', credentials)
+    await api.post('/api/login').send(credentials)
+      .expect(401)
+  })
+
+})
+
 describe('when adding a note', () => {
 
   test('succeeds with status code 201 for valid data', async () => {
-    const usersAtStart = await helper.usersInDb()
     const newNote = {
       content: 'async/await simplifies making async calls',
       important: true,
-      userId: usersAtStart[0].id
     }
 
-    await api.post('/api/notes').send(newNote)
+    // generate 'Authorization' token
+    const token = await helper.generateAuthToken()
+    await api
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newNote)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -57,8 +92,20 @@ describe('when adding a note', () => {
     expect(contents).toContain(newNote.content)
   })
 
+  test('fails with status code 401 for an invalid auhtorization', async () => {
+    await api
+      .post('/api/notes')
+      .send({})
+      .expect(401)
+  })
+
   test('fails with status code 400 for an invalid data', async () => {
-    await api.post('/api/notes').send({}).expect(400)
+    const token = await helper.generateAuthToken()
+    await api
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(400)
     const notesAtEnd = await helper.notesInDb()
     expect(notesAtEnd).toHaveLength(helper.initialNotes.length)
   })
@@ -124,7 +171,6 @@ describe('when adding a user', () => {
       .expect('Content-Type', /application\/json/)
 
     const usersAtEnd = await helper.usersInDb()
-    console.log(usersAtEnd)
     expect(usersAtEnd).toHaveLength(helper.initialUsers.length + 1)
 
     const usernames = usersAtEnd.map(u => u.username)
@@ -142,38 +188,6 @@ describe('when adding a user', () => {
 
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd.length).toEqual(helper.initialUsers.length)
-  })
-
-})
-
-describe('when authenticating a user', () => {
-
-  test('succeeds and returns an auth token for a valid user', async () => {
-    const credentials = {
-      username: helper.initialUsers[0].username,
-      password: helper.initialUsers[0].password
-    }
-    console.log('login credentials:', credentials)
-    const response = await api
-      .post('/api/login')
-      .send(credentials)
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
-
-    expect(response.body.token).toBeDefined()
-    expect(response.body.name).toBe(
-      helper.initialUsers[0].name
-    )
-  })
-
-  test('fails for an invalid user', async () => {
-    const credentials = {
-      username: helper.initialUsers[0].username,
-      password: 'invalid_pwd'
-    }
-    console.log('login credentials:', credentials)
-    await api.post('/api/login').send(credentials)
-      .expect(401)
   })
 
 })

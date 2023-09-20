@@ -83,6 +83,16 @@ const usersInDb = async () => {
   return users.map(user => user.toJSON())
 }
 
+const generateAuthToken = async () => {
+  const user = await User.findOne({
+    username: initialUsers[0].username
+  })
+  return security.generateToken({
+    username: user.username,
+    id: user._id
+  })
+}
+
 module.exports = {
   initialUsers,
   initialNotes,
@@ -90,4 +100,5 @@ module.exports = {
   nonExistingId,
   notesInDb,
   usersInDb,
+  generateAuthToken,
 }

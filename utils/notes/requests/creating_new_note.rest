@@ -1,10 +1,9 @@
-POST http://localhost:3001/api/blogs
+POST http://localhost:3001/api/notes
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbWFsdG1hbiIsImlkIjoiNjUwYTY1ODdiZTlkNjAyZjZiMWU5YjZlIiwiaWF0IjoxNjk1MTkzNTczfQ.9oLD7E7b1L8IywN3AjM6EvfrfvXY_Qidw0qqt6tRY5g
 
 {
-  "title": "The Technium",
-  "author": "Kevin Kelly",
-  "url": "https://feedpress.me/thetechnium",
-  "likes": 999
+  "content": "Ensure that everything still works ok",
+  "important": true,
+  "userId": "65094d20aeab0d4108d5e0c2"
 }

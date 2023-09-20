@@ -1,9 +1,0 @@
-POST http://localhost:3001/api/notes
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbWFsdG1hbiIsImlkIjoiNjUwYTY1ODdiZTlkNjAyZjZiMWU5YjZlIiwiaWF0IjoxNjk1MTg0MTg4fQ.ZPUF-U0hZHj40XsahW0wQQomD83YdrrTfuK_7DusJuw
-
-{
-  "content": "Ensure that everything still works",
-  "important": true,
-  "userId": "65094d20aeab0d4108d5e0c2"
-}
