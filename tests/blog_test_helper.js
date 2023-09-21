@@ -48,9 +48,9 @@ const newUser = {
 const initialBlogs = initialUsers.flatMap(user => user.blogs)
 
 const newBlog = {
-  title: initialBlogs[0].title,
-  author: initialBlogs[0].author,
-  url: initialBlogs[0].url,
+  title: 'Sapiens',
+  author: 'Yuval Noah Harari',
+  url: 'https://www.ynharari.com/',
 }
 
 const newBlogNoAuthor = {

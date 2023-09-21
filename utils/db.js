@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 
 const connectToDb = (uri) => {
-  logger.info('connecting to MongoDB at ', uri)
+  logger.info('connecting to MongoDB at', uri)
   mongoose.connect(uri)
     .then(() => {
       logger.info('connected to MongoDB')

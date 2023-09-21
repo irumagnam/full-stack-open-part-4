@@ -33,15 +33,15 @@ blogsRouter.delete('/:id', async (request, response) => {
   const user = request.user
   console.log(`deleting ${blogId}`)
   // current user owns this blog?
-  if (user.blogs.filter(b => b.toString() === blogId).length === 0) {
+  if (user.blogs.find(b => b.toString() === blogId)) {
+    // requestor owns this blog. go ahead and remove the blog
+    await Blog.findByIdAndRemove(blogId)
+    return response.status(204).end()
+  } else {
     // nope, this is an unauthorized attempt
     return response.status(401).json({
       error: 'This blog does not belong to the current user'
     })
-  } else {
-    // requestor owns this blog. go ahead and remove the blog
-    await Blog.findByIdAndRemove(blogId)
-    return response.status(204).end()
   }
 })
 
@@ -78,15 +78,17 @@ const createOrUpdateBlog = async (request, response) => {
   const blogId = request.params.id
   if (blogId) {
     // make sure user owns this blog
-    if (user.blogs.filter(b => b.toString() === blogId).length === 0) {
+    if (user.blogs.find(b => b.toString() === blogId)) {
+      // update this blog object in DB
+      await Blog.findByIdAndUpdate(blogId, blog, { new: true })
+      // send response
+      return response.status(204).end()
+    } else {
+      // unauthorized attempt
       return response.status(401).json({
         error: 'This blog does not belong to the current user'
       })
     }
-    // update this blog object in DB
-    await Blog.findByIdAndUpdate(blogId, blog, { new: true })
-    // send response
-    return response.status(204).end()
   } else {
     // save this blog object in DB
     const savedBlog = await new Blog(blog).save()
