@@ -1,7 +1,6 @@
 const config = require('./config')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { expressjwt: jwtExpress } = require('express-jwt')
 
 const hashText = async (text, saltRounds = 10) => {
   const hashedText = await bcrypt.hash(text, saltRounds)
@@ -17,7 +16,7 @@ const generateToken = (data) => {
   return jwt.sign(
     data,
     config.SECRET,
-    //{ expiresIn: process.env.TOKEN_EXP_SECONDS }
+    { expiresIn: 60*60 }
   )
 }
 
@@ -35,17 +34,9 @@ const verifyToken = (token) => {
   return decodedToken
 }
 
-const protectResource = () => {
-  jwtExpress({
-    secret: config.SECRET,
-    algorithms: ['HS256']
-  })
-}
-
 module.exports = {
   hashText,
   compare,
   generateToken,
   verifyToken,
-  protectResource,
 }

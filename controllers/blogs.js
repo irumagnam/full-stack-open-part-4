@@ -3,21 +3,52 @@ const Blog = require('../models/blog')
 
 // get all records
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
-  response.json(blogs)
+  const blogs = await Blog
+    .find({})
+    .populate('user', { username: 1, name: 1 })
+  return response.json(blogs)
 })
 
 // get a specific record
 blogsRouter.get('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id)
+  const blog = await Blog
+    .findById(request.params.id)
+    .populate('user', { username: 1, name: 1 })
   blog ? response.json(blog) : response.status(404).end()
 })
 
 // create new record
 blogsRouter.post('/', async (request, response) => {
+  await createOrUpdateBlog(request, response)
+})
+
+// update an existing record
+blogsRouter.put('/:id', async (request, response) => {
+  await createOrUpdateBlog(request, response)
+})
+
+// delete an existing record
+blogsRouter.delete('/:id', async (request, response) => {
+  const blogId = request.params.id
+  const user = request.user
+  console.log(`deleting ${blogId}`)
+  // current user owns this blog?
+  if (user.blogs.filter(b => b.toString() === blogId).length === 0) {
+    // nope, this is an unauthorized attempt
+    return response.status(401).json({
+      error: 'This blog does not belong to the current user'
+    })
+  } else {
+    // requestor owns this blog. go ahead and remove the blog
+    await Blog.findByIdAndRemove(blogId)
+    return response.status(204).end()
+  }
+})
+
+const createOrUpdateBlog = async (request, response) => {
   const body = request.body
 
-  // input validations
+  // request data validations
   const requiredFields = ['title', 'author', 'url']
   const missingFields = requiredFields.filter(
     key => body[key] === undefined
@@ -28,40 +59,43 @@ blogsRouter.post('/', async (request, response) => {
     })
   }
 
-  const newBlog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes || 0
-  })
+  // extract user from the request.
+  // since this is a protected resource
+  // middleware will check for a valid auth token
+  // and place the user object in request.user
+  const user = request.user
 
-  const savedBlog = await newBlog.save()
-  response.status(201).json(savedBlog)
-})
-
-// update an existing record
-blogsRouter.put('/:id', async (request, response) => {
-  console.log(`updating ${request.params.i}`)
-  const body = request.body
-
+  // capture request data
   const blog = {
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes
+    title: body.title.trim(),
+    author: body.author.trim(),
+    url: body.url.trim(),
+    likes: body.likes || 0,
+    user: user.id,
   }
 
-  const updatedBlog = await Blog.findByIdAndUpdate(
-    request.params.id, blog, { new: true }
-  )
-  response.json(updatedBlog)
-})
-
-// delete an existing record
-blogsRouter.delete('/:id', async (request, response) => {
-  console.log(`deleting ${request.params.id}`)
-  await Blog.findByIdAndRemove(request.params.id)
-  response.status(204).end()
-})
+  // save or update based on blog id availability
+  const blogId = request.params.id
+  if (blogId) {
+    // make sure user owns this blog
+    if (user.blogs.filter(b => b.toString() === blogId).length === 0) {
+      return response.status(401).json({
+        error: 'This blog does not belong to the current user'
+      })
+    }
+    // update this blog object in DB
+    await Blog.findByIdAndUpdate(blogId, blog, { new: true })
+    // send response
+    return response.status(204).end()
+  } else {
+    // save this blog object in DB
+    const savedBlog = await new Blog(blog).save()
+    // also add this blog id to user object in DB
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+    // send response
+    return response.status(201).json(savedBlog)
+  }
+}
 
 module.exports = blogsRouter

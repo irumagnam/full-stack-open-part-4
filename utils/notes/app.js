@@ -1,26 +1,18 @@
-const config = require('./utils/config')
-const security = require('./utils/security')
 const express = require('express')
 require('express-async-errors')
 const app = express()
 const cors = require('cors')
+const db = require('./utils/db')
+const security = require('./utils/security')
 const notesRouter = require('./controllers/notes')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const middleware = require('./utils/middleware')
-const logger = require('./utils/logger')
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 
-logger.info('connecting to', config.MONGODB_URI_NOTE_APP)
-
-mongoose.connect(config.MONGODB_URI_NOTE_APP)
-  .then(() => {
-    logger.info('connected to MongoDB')
-  })
-  .catch((error) => {
-    logger.error('error connecting to MongoDB:', error.message)
-  })
+// connect to database
+db.connect()
 
 app.use(cors())
 app.use(express.static('build'))

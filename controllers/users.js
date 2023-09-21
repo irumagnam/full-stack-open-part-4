@@ -25,12 +25,12 @@ usersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body
   if (username.length <= minLength) {
     return response.status(400).send({
-      error: `username must be atlest ${minLength} characters`
+      error: `username must be atleast ${minLength} characters`
     })
   }
   if (password.length <= minLength) {
     return response.status(400).send({
-      error: `password must be atlest ${minLength} characters`
+      error: `password must be atleast ${minLength} characters`
     })
   }
 

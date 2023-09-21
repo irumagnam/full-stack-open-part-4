@@ -45,8 +45,13 @@ const newUser = {
   ]
 }
 
-const initialBlogs = initialUsers.map(user => user.blogs)
-const newBlog = newUser.blogs[0]
+const initialBlogs = initialUsers.flatMap(user => user.blogs)
+
+const newBlog = {
+  title: initialBlogs[0].title,
+  author: initialBlogs[0].author,
+  url: initialBlogs[0].url,
+}
 
 const newBlogNoAuthor = {
   title: newBlog.title,
@@ -88,8 +93,6 @@ const setupInitialData = async () => {
     // update user with blog ids
     savedUser.blogs = savedBlogs.map(blog => blog._id)
     await User.findByIdAndUpdate(savedUser._id, savedUser)
-    console.log(savedUser)
-    console.log(savedBlogs)
   }
 }
 
@@ -100,7 +103,28 @@ const usersInDb = async () => {
 
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
+    .populate('user', { username: 1, name: 1 })
   return blogs.map(b => b.toJSON())
+}
+
+const findBlogById = async (id) => {
+  const blog = await Blog.findById(id)
+    .populate('user', { username: 1, name: 1 })
+  return blog.toJSON()
+}
+
+const generateAuthToken = async () => {
+  const user = await User.findOne({
+    username: initialUsers[0].username
+  })
+
+  const token = security.generateToken({
+    username: user.username,
+    id: user._id
+  })
+
+  const authToken = `Bearer ${token}`
+  return authToken
 }
 
 module.exports = {
@@ -114,4 +138,6 @@ module.exports = {
   setupInitialData,
   usersInDb,
   blogsInDb,
+  findBlogById,
+  generateAuthToken,
 }

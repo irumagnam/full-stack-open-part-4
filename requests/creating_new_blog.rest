@@ -1,10 +1,9 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbWFsdG1hbiIsImlkIjoiNjUwYTY1ODdiZTlkNjAyZjZiMWU5YjZlIiwiaWF0IjoxNjk1MTkzNTczfQ.9oLD7E7b1L8IywN3AjM6EvfrfvXY_Qidw0qqt6tRY5g
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImVsb25tdXNrIiwiaWQiOiI2NTBhOWRiZTdlYzA4ZDJiMGE3OGU3ZTQiLCJpYXQiOjE2OTUyNzEzNDMsImV4cCI6MTY5NTI3NDk0M30.XzC11vrQ68zw2pbtrPFUeOThkDDhKghyh8PS0vHS0_Y
 
 {
   "title": "The Technium",
   "author": "Kevin Kelly",
-  "url": "https://feedpress.me/thetechnium",
-  "likes": 999
+  "url": "https://feedpress.me/thetechnium"
 }
