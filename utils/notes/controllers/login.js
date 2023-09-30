@@ -13,7 +13,7 @@ loginRouter.post('/', async (request, response) => {
 
   // reject login for invalid credentials
   if (!(user && passwordCorrect)) {
-    response.status(401).json({
+    return response.status(401).json({
       error: 'invalid username or password'
     })
   }
@@ -25,7 +25,7 @@ loginRouter.post('/', async (request, response) => {
   })
 
   // send response
-  response.json({
+  return response.json({
     token: token,
     username: user.username,
     name: user.name,

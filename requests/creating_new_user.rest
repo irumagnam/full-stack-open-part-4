@@ -6,3 +6,13 @@ Content-Type: application/json
   "name": "Elon Musk",
   "password": "starship"
 }
+
+###
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "username": "samaltman",
+  "name": "Sam Altman",
+  "password": "openai"
+}

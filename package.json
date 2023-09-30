@@ -11,7 +11,8 @@
     "deploy:full": "npm run build:ui && npm run deploy",
     "logs:prod": "fly logs",
     "lint": "eslint .",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --testPathIgnorePatterns=utils"
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --testPathIgnorePatterns=utils",
+    "start:test": "cross-env NODE_ENV=test nodemon index.js"
   },
   "author": "",
   "license": "ISC",

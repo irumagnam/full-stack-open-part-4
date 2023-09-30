@@ -1,5 +1,6 @@
 const express = require('express')
 require('express-async-errors')
+const config = require('./utils/config')
 const app = express()
 const cors = require('cors')
 const db = require('./utils/db')
@@ -22,6 +23,13 @@ app.use('/api/notes', security.protectResource())
 app.use('/api/notes', notesRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
+
+// router to support E2E testing
+console.log(config.NODE_ENV)
+if (config.NODE_ENV === 'test') {
+  app.use('/api/testing', require('./controllers/testing'))
+}
+
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 

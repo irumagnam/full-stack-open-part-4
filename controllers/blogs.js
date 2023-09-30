@@ -71,27 +71,20 @@ const createOrUpdateBlog = async (request, response) => {
     author: body.author.trim(),
     url: body.url.trim(),
     likes: body.likes || 0,
-    user: user.id,
+    user: body.user || user.id,
   }
 
   // save or update based on blog id availability
   const blogId = request.params.id
   if (blogId) {
-    // make sure user owns this blog
-    if (user.blogs.find(b => b.toString() === blogId)) {
-      // update this blog object in DB
-      await Blog.findByIdAndUpdate(blogId, blog, { new: true })
-      // send response
-      return response.status(204).end()
-    } else {
-      // unauthorized attempt
-      return response.status(401).json({
-        error: 'This blog does not belong to the current user'
-      })
-    }
+    // update this blog object in DB
+    await Blog.findByIdAndUpdate(blogId, blog, { new: true })
+    // send response
+    return response.status(204).end()
   } else {
     // save this blog object in DB
     const savedBlog = await new Blog(blog).save()
+    savedBlog.populate('user', { username: 1, name: 1 })
     // also add this blog id to user object in DB
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()

@@ -16,7 +16,7 @@ const generateToken = (data) => {
   return jwt.sign(
     data,
     config.SECRET,
-    { expiresIn: 60*60 }
+    { expiresIn: Number(process.env.TOKEN_EXP_SECONDS) }
   )
 }
 
